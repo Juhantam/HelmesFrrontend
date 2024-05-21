@@ -1,7 +1,11 @@
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from '@angular/core';
-import {Observable, tap} from 'rxjs';
-import {PersonWorkSectorsCreationResponse, PersonWorkSectorsDataSaveRequest} from "../model/person-work-sectors-data";
+import {Observable} from 'rxjs';
+import {
+  PersonWorkSectorsCreationResponse,
+  PersonWorkSectorsDataSaveRequest,
+  PersonWorkSectorsInfo
+} from "../model/person-work-sectors-data";
 import {BaseUrl} from "./model/BaseUrl";
 
 @Injectable({
@@ -14,16 +18,10 @@ export class PersonWorkSectorsService {
   }
 
   savePersonWorkSectorsInfo(personWorkSectorsData: PersonWorkSectorsDataSaveRequest): Observable<PersonWorkSectorsCreationResponse> {
-    return this.http.post<PersonWorkSectorsCreationResponse>(this.url, personWorkSectorsData)
-      .pipe(tap(console.log));
+    return this.http.post<PersonWorkSectorsCreationResponse>(this.url, personWorkSectorsData);
   }
 
-  getPersonWorkSectors(): Observable<PersonWorkSectorsDataSaveRequest> {
-    return this.http.get<PersonWorkSectorsDataSaveRequest>(this.url);
+  getPersonWorkSectorsInfo(personWorkSectorsInfoId: number): Observable<PersonWorkSectorsInfo> {
+    return this.http.get<PersonWorkSectorsInfo>(this.url, {params: {personWorksSectorsInfoId: personWorkSectorsInfoId}});
   }
-
-  getTest(): Observable<any> {
-    return this.http.get<string>(this.url, {params: {personName: "TEST"}});
-  }
-
 }

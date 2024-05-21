@@ -6,7 +6,8 @@ export interface PersonWorkSectorsDataSaveRequest {
   isAcceptTermsOfService: boolean;
 }
 
-export interface PersonWorkSectorsData {
+export interface PersonWorkSectorsInfo {
+  id: number
   person: Person;
   selectedWorkSectorIds: number[];
   isAcceptTermsOfService: boolean;

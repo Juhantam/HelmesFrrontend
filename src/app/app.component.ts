@@ -2,7 +2,7 @@ import {SelectionModel} from '@angular/cdk/collections';
 import {FlatTreeControl} from '@angular/cdk/tree';
 import {Component, OnInit} from '@angular/core';
 import {MatTreeFlatDataSource, MatTreeFlattener} from "@angular/material/tree";
-import {PersonWorkSectorsDataSaveRequest} from "./model/person-work-sectors-data";
+import {PersonWorkSectorsDataSaveRequest, PersonWorkSectorsInfo} from "./model/person-work-sectors-data";
 import {WorkSector} from "./model/work-sector";
 import {PersonWorkSectorsService} from "./service/person-work-sectors.service";
 import {WorkSectorsService} from "./service/work-sector.service";
@@ -13,8 +13,6 @@ import {WorkSectorsService} from "./service/work-sector.service";
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
-  title = 'helmes-frontend';
-
   dataLoaded: boolean = false;
   flatSectorMap = new Map<WorkSectorFlatOption, WorkSectorOption>();
   nestedSectorMap = new Map<WorkSectorOption, WorkSectorFlatOption>();
@@ -25,9 +23,9 @@ export class AppComponent implements OnInit {
   checklistSelection = new SelectionModel<WorkSectorFlatOption>(true);
 
   isAcceptTermsOfService: boolean = false;
-  personName: string = '';
+  personName: string | undefined = '';
 
-  private personWorkSectorsInfo?: PersonWorkSectorsDataSaveRequest;
+  private personWorkSectorsInfo?: PersonWorkSectorsInfo;
 
   constructor(private personWorkSectorsService: PersonWorkSectorsService,
               private workSectorService: WorkSectorsService) {
@@ -143,7 +141,7 @@ export class AppComponent implements OnInit {
   }
 
   private updatePersonWorkSectorsInfo(): void {
-
+    console.log("Update");
   }
 
   private savePersonWorkSectorsInfo(): void {
@@ -153,7 +151,21 @@ export class AppComponent implements OnInit {
         selectedWorkSectorIds: this.checklistSelection.selected.map(selectedSector => selectedSector.id),
         isAcceptTermsOfService: true
       } as PersonWorkSectorsDataSaveRequest)
-      .subscribe(response => console.log(response));
+      .subscribe(response => {
+        this.personWorkSectorsService.getPersonWorkSectorsInfo(response.personWorkSectorsId)
+          .subscribe(info => this.personWorkSectorsInfo = info);
+        this.refreshPersonWorkSectorsInfo();
+      });
+  }
+
+  private refreshPersonWorkSectorsInfo() {
+    if (!!this.personWorkSectorsInfo) {
+      this.personName = this.personWorkSectorsInfo.person.name;
+      // For some reason this.checklistSelection.setSelected(whateverArray) is not compiling so had to select one by one
+      const options: WorkSectorFlatOption[] = this.treeControl.dataNodes.filter(node => this.personWorkSectorsInfo?.selectedWorkSectorIds.includes(node.id));
+      options.forEach(option => this.checklistSelection.select(option));
+      this.isAcceptTermsOfService = this.personWorkSectorsInfo.isAcceptTermsOfService
+    }
   }
 }
 
@@ -165,7 +177,7 @@ export interface WorkSectorOption {
 }
 
 export class WorkSectorFlatOption {
-  id: number | null = null;
+  id: number = -1;
   item: string = '';
   expandable: boolean = false;
   level: number = 0;
