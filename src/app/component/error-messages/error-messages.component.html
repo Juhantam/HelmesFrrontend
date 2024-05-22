@@ -1,0 +1,5 @@
+<ng-container *ngIf="errorMessages.length > 0">
+  <div class="error-messages-content" *ngFor="let message of errorMessages">
+    <mat-hint class="error-hint">{{message}}</mat-hint>
+  </div>
+</ng-container>

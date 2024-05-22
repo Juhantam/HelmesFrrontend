@@ -1,0 +1,9 @@
+.error-messages-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.error-hint {
+  color: red;
+}

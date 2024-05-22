@@ -1,8 +1,11 @@
 import {SelectionModel} from '@angular/cdk/collections';
 import {FlatTreeControl} from '@angular/cdk/tree';
 import {Component, OnInit} from '@angular/core';
+import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatTreeFlatDataSource, MatTreeFlattener} from "@angular/material/tree";
+import {ErrorMessagesComponent} from "./component/error-messages/error-messages.component";
 import {PersonWorkSectorsDataSaveRequest, PersonWorkSectorsInfo} from "./model/person-work-sectors-data";
+import {ValidationErrorCode} from "./model/validation-error-code";
 import {WorkSector} from "./model/work-sector";
 import {PersonWorkSectorsService} from "./service/person-work-sectors.service";
 import {WorkSectorsService} from "./service/work-sector.service";
@@ -13,6 +16,12 @@ import {WorkSectorsService} from "./service/work-sector.service";
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
+  private readonly VALIDATION_MESSAGES: Record<string, string> = {
+    NAME_IS_MANDATORY: 'Name is mandatory.',
+    MUST_SELECT_AT_LEAST_ONE_SECTOR: 'At least one work sector must be selected.',
+    MUST_ACCEPT_TERMS_OF_SERVICE: 'Terms of service must be accepted.',
+  };
+
   dataLoaded: boolean = false;
   flatSectorMap = new Map<WorkSectorFlatOption, WorkSectorOption>();
   nestedSectorMap = new Map<WorkSectorOption, WorkSectorFlatOption>();
@@ -28,7 +37,8 @@ export class AppComponent implements OnInit {
   private personWorkSectorsInfo?: PersonWorkSectorsInfo;
 
   constructor(private personWorkSectorsService: PersonWorkSectorsService,
-              private workSectorService: WorkSectorsService) {
+              private workSectorService: WorkSectorsService,
+              private matSnackBar: MatSnackBar) {
     this.treeFlattener = new MatTreeFlattener(
       this.transformer,
       this.getLevel,
@@ -149,12 +159,27 @@ export class AppComponent implements OnInit {
       {
         personName: this.personName,
         selectedWorkSectorIds: this.checklistSelection.selected.map(selectedSector => selectedSector.id),
-        isAcceptTermsOfService: true
+        isAcceptTermsOfService: this.isAcceptTermsOfService
       } as PersonWorkSectorsDataSaveRequest)
-      .subscribe(response => {
-        this.personWorkSectorsService.getPersonWorkSectorsInfo(response.personWorkSectorsId)
-          .subscribe(info => this.personWorkSectorsInfo = info);
-        this.refreshPersonWorkSectorsInfo();
+      .subscribe({
+        next: response => {
+          this.personWorkSectorsService.getPersonWorkSectorsInfo(response.personWorkSectorsId)
+            .subscribe(info => {
+              this.matSnackBar.open("Person work sectors info saved successfully", undefined,
+                {
+                  duration: 5000
+                })
+              this.personWorkSectorsInfo = info
+              this.refreshPersonWorkSectorsInfo();
+            });
+        },
+        error: errorResponse => {
+          const errorCodes: ValidationErrorCode[] = errorResponse?.error?.errorCodes ?? [];
+          this.matSnackBar.openFromComponent(ErrorMessagesComponent, {
+            data: errorCodes.map(errorCode => this.VALIDATION_MESSAGES[errorCode.name]),
+            duration: 5000
+          })
+        }
       });
   }
 
@@ -166,6 +191,12 @@ export class AppComponent implements OnInit {
       options.forEach(option => this.checklistSelection.select(option));
       this.isAcceptTermsOfService = this.personWorkSectorsInfo.isAcceptTermsOfService
     }
+  }
+
+  isAllDataPresent(): boolean {
+    return !!this.personName && this.personName.length > 0 &&
+      this.checklistSelection.selected.length > 0 &&
+      this.isAcceptTermsOfService;
   }
 }
 

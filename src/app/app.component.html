@@ -37,7 +37,7 @@
             </mat-tree>
           </ng-container>
         </mat-card-content>
-        <mat-card-content>
+        <mat-card-content class="tos-content">
           <mat-checkbox class="terms-of-service-checkbox"
                         [(ngModel)]="isAcceptTermsOfService"
                         [name]="'tos-checkbox'"
@@ -47,7 +47,10 @@
         </mat-card-content>
         <mat-card-content>
           <button mat-raised-button color="primary" type="submit" value="Save" class="save-button"
-                  (click)="saveOrUpdatePersonWorkSectorsInfo()">Save
+                  (click)="saveOrUpdatePersonWorkSectorsInfo()"
+                  [disabled]="!isAllDataPresent()"
+          >
+            Save
           </button>
         </mat-card-content>
       </mat-card>
