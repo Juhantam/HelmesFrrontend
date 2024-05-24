@@ -1,6 +1,13 @@
 import {Person} from "./person";
 
-export interface PersonWorkSectorsDataSaveRequest {
+export interface PersonWorkSectorsInfoSaveRequest {
+  personName: string;
+  selectedWorkSectorIds: number[];
+  isAcceptTermsOfService: boolean;
+}
+
+export interface PersonWorkSectorsInfoUpdateRequest {
+  personWorkSectorsInfoId: number;
   personName: string;
   selectedWorkSectorIds: number[];
   isAcceptTermsOfService: boolean;
@@ -13,6 +20,6 @@ export interface PersonWorkSectorsInfo {
   isAcceptTermsOfService: boolean;
 }
 
-export interface PersonWorkSectorsCreationResponse {
+export interface PersonWorkSectorsModificationResponse {
   personWorkSectorsId: number;
 }

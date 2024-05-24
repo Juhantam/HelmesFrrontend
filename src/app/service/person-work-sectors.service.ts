@@ -2,9 +2,10 @@ import {HttpClient} from "@angular/common/http";
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {
-  PersonWorkSectorsCreationResponse,
-  PersonWorkSectorsDataSaveRequest,
-  PersonWorkSectorsInfo
+  PersonWorkSectorsInfo,
+  PersonWorkSectorsInfoSaveRequest,
+  PersonWorkSectorsInfoUpdateRequest,
+  PersonWorkSectorsModificationResponse
 } from "../model/person-work-sectors-data";
 import {BaseUrl} from "./model/BaseUrl";
 
@@ -17,8 +18,12 @@ export class PersonWorkSectorsService {
   constructor(private http: HttpClient) {
   }
 
-  savePersonWorkSectorsInfo(personWorkSectorsData: PersonWorkSectorsDataSaveRequest): Observable<PersonWorkSectorsCreationResponse> {
-    return this.http.post<PersonWorkSectorsCreationResponse>(this.url, personWorkSectorsData);
+  savePersonWorkSectorsInfo(personWorkSectorsSaveInfo: PersonWorkSectorsInfoSaveRequest): Observable<PersonWorkSectorsModificationResponse> {
+    return this.http.post<PersonWorkSectorsModificationResponse>(this.url, personWorkSectorsSaveInfo);
+  }
+
+  updatePersonWorkSectorsInfo(personWorkSectorsUpdateInfo: PersonWorkSectorsInfoUpdateRequest): Observable<PersonWorkSectorsModificationResponse> {
+    return this.http.put<PersonWorkSectorsModificationResponse>(this.url, personWorkSectorsUpdateInfo);
   }
 
   getPersonWorkSectorsInfo(personWorkSectorsInfoId: number): Observable<PersonWorkSectorsInfo> {

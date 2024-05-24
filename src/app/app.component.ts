@@ -3,8 +3,14 @@ import {FlatTreeControl} from '@angular/cdk/tree';
 import {Component, OnInit} from '@angular/core';
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatTreeFlatDataSource, MatTreeFlattener} from "@angular/material/tree";
+import {take} from "rxjs";
 import {ErrorMessagesComponent} from "./component/error-messages/error-messages.component";
-import {PersonWorkSectorsDataSaveRequest, PersonWorkSectorsInfo} from "./model/person-work-sectors-data";
+import {
+  PersonWorkSectorsInfo,
+  PersonWorkSectorsInfoSaveRequest,
+  PersonWorkSectorsInfoUpdateRequest,
+  PersonWorkSectorsModificationResponse
+} from "./model/person-work-sectors-data";
 import {ValidationErrorCode} from "./model/validation-error-code";
 import {WorkSector} from "./model/work-sector";
 import {PersonWorkSectorsService} from "./service/person-work-sectors.service";
@@ -20,6 +26,7 @@ export class AppComponent implements OnInit {
     NAME_IS_MANDATORY: 'Name is mandatory.',
     MUST_SELECT_AT_LEAST_ONE_SECTOR: 'At least one work sector must be selected.',
     MUST_ACCEPT_TERMS_OF_SERVICE: 'Terms of service must be accepted.',
+    PERSON_WORK_SECTORS_INFO_ID_IS_MISSING: 'Person work sectors info id is missing',
   };
 
   dataLoaded: boolean = false;
@@ -150,28 +157,21 @@ export class AppComponent implements OnInit {
     }
   }
 
-  private updatePersonWorkSectorsInfo(): void {
-    console.log("Update");
-  }
-
   private savePersonWorkSectorsInfo(): void {
     this.personWorkSectorsService.savePersonWorkSectorsInfo(
       {
         personName: this.personName,
         selectedWorkSectorIds: this.checklistSelection.selected.map(selectedSector => selectedSector.id),
         isAcceptTermsOfService: this.isAcceptTermsOfService
-      } as PersonWorkSectorsDataSaveRequest)
+      } as PersonWorkSectorsInfoSaveRequest)
+      .pipe(take(1))
       .subscribe({
         next: response => {
-          this.personWorkSectorsService.getPersonWorkSectorsInfo(response.personWorkSectorsId)
-            .subscribe(info => {
-              this.matSnackBar.open("Person work sectors info saved successfully", undefined,
-                {
-                  duration: 5000
-                })
-              this.personWorkSectorsInfo = info
-              this.refreshPersonWorkSectorsInfo();
-            });
+          this.matSnackBar.open("Person work sectors info saved successfully", undefined,
+            {
+              duration: 5000
+            })
+          this.doAfterSuccessfulSaveOrUpdate(response);
         },
         error: errorResponse => {
           const errorCodes: ValidationErrorCode[] = errorResponse?.error?.errorCodes ?? [];
@@ -180,6 +180,41 @@ export class AppComponent implements OnInit {
             duration: 5000
           })
         }
+      });
+  }
+
+  private updatePersonWorkSectorsInfo(): void {
+    this.personWorkSectorsService.updatePersonWorkSectorsInfo(
+      {
+        personWorkSectorsInfoId: this.personWorkSectorsInfo?.id,
+        personName: this.personName,
+        selectedWorkSectorIds: this.checklistSelection.selected.map(selectedSector => selectedSector.id),
+        isAcceptTermsOfService: this.isAcceptTermsOfService
+      } as PersonWorkSectorsInfoUpdateRequest)
+      .pipe(take(1))
+      .subscribe({
+        next: response => {
+          this.matSnackBar.open("Person work sectors info updated successfully", undefined,
+            {
+              duration: 5000
+            })
+          this.doAfterSuccessfulSaveOrUpdate(response);
+        },
+        error: errorResponse => {
+          const errorCodes: ValidationErrorCode[] = errorResponse?.error?.errorCodes ?? [];
+          this.matSnackBar.openFromComponent(ErrorMessagesComponent, {
+            data: errorCodes.map(errorCode => this.VALIDATION_MESSAGES[errorCode.name]),
+            duration: 5000
+          })
+        }
+      });
+  }
+
+  private doAfterSuccessfulSaveOrUpdate(response: PersonWorkSectorsModificationResponse) {
+    this.personWorkSectorsService.getPersonWorkSectorsInfo(response.personWorkSectorsId)
+      .subscribe(info => {
+        this.personWorkSectorsInfo = info
+        this.refreshPersonWorkSectorsInfo();
       });
   }
 
