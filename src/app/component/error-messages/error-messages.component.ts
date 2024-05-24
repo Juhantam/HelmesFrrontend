@@ -7,7 +7,6 @@ import {MAT_SNACK_BAR_DATA} from "@angular/material/snack-bar";
   styleUrl: './error-messages.component.css'
 })
 export class ErrorMessagesComponent {
-
   constructor(@Inject(MAT_SNACK_BAR_DATA) public errorMessages: string[]) {
   }
 }

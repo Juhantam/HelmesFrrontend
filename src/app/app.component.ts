@@ -95,15 +95,15 @@ export class AppComponent implements OnInit {
 
   descendantsAllSelected(sector: WorkSectorFlatOption): boolean {
     const descendants = this.treeControl.getDescendants(sector);
-    return descendants.every((child) =>
-      this.checklistSelection.isSelected(child)
+    return descendants.every((childSector) =>
+      this.checklistSelection.isSelected(childSector)
     );
   }
 
   descendantsPartiallySelected(sector: WorkSectorFlatOption): boolean {
     const descendants = this.treeControl.getDescendants(sector);
-    const result = descendants.some((child) =>
-      this.checklistSelection.isSelected(child)
+    const result = descendants.some((childSector) =>
+      this.checklistSelection.isSelected(childSector)
     );
     return result && !this.descendantsAllSelected(sector);
   }
